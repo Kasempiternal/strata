@@ -491,10 +491,8 @@ fn parse_attrs(rec: &[u8], idx: u64) -> Parsed<'_> {
                     }
                 }
             }
-            AT_INDEX_ALLOCATION => {
-                if a[8] != 0 && a.len() >= 0x40 && u64le(a, 0x10) == 0 {
-                    out.alloc += u64le(a, 0x28);
-                }
+            AT_INDEX_ALLOCATION if a[8] != 0 && a.len() >= 0x40 && u64le(a, 0x10) == 0 => {
+                out.alloc += u64le(a, 0x28);
             }
             _ => {}
         }
@@ -504,8 +502,10 @@ fn parse_attrs(rec: &[u8], idx: u64) -> Parsed<'_> {
 
 fn push_utf16(dst: &mut String, bytes: &[u8]) {
     let it = bytes
-        .chunks_exact(2)
-        .map(|c| u16::from_le_bytes([c[0], c[1]]));
+        .as_chunks::<2>()
+        .0
+        .iter()
+        .map(|&c| u16::from_le_bytes(c));
     for ch in char::decode_utf16(it) {
         dst.push(ch.unwrap_or('\u{FFFD}'));
     }

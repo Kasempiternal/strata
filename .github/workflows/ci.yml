@@ -19,7 +19,8 @@ jobs:
         working-directory: src-tauri
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      # Pinned to the MSRV so new upstream lints can't break CI without a code change.
+      - uses: dtolnay/rust-toolchain@1.88
         with:
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
