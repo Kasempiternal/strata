@@ -18,7 +18,7 @@ jobs:
       run:
         working-directory: src-tauri
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # Pinned to the MSRV so new upstream lints can't break CI without a code change.
       - uses: dtolnay/rust-toolchain@1.88
         with:
@@ -35,7 +35,7 @@ jobs:
     runs-on: windows-latest
     needs: check
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: 22
