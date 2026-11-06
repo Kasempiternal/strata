@@ -1,0 +1,43 @@
+name: Release
+
+# Push a tag like v1.2.0 (matching the version in src-tauri/tauri.conf.json) to publish a release.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - run: npm ci
+      - name: Release notes from CHANGELOG
+        shell: pwsh
+        run: |
+          $ver = "${{ github.ref_name }}".TrimStart('v')
+          $text = Get-Content CHANGELOG.md -Raw
+          $m = [regex]::Match($text, "(?ms)^## \[$([regex]::Escape($ver))\][^\n]*\n(.*?)(?=^## \[|\z)")
+          $notes = if ($m.Success) { $m.Groups[1].Value.Trim() } else { "See CHANGELOG.md" }
+          $notes += "`n`n---`n**Install:** download ``Strata_${ver}_x64-setup.exe`` below and run it. Windows SmartScreen may warn because the installer is not code-signed yet: click **More info → Run anyway**."
+          Set-Content -Path release-notes.md -Value $notes -Encoding utf8
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: Strata ${{ github.ref_name }}
+          releaseBodyPath: release-notes.md
+          releaseDraft: false
+          prerelease: false

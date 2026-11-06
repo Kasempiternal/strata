@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Strata – See where your disk space went. In seconds.</title>
+<meta name="description" content="Strata is a free, open-source disk space analyzer for Windows. It reads the NTFS Master File Table directly, so a multi-terabyte drive is mapped in seconds, with an interactive sunburst, largest files and safe delete.">
+<meta name="theme-color" content="#0b0d12">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="canonical" href="https://kasempiternal.github.io/strata/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Strata">
+<meta property="og:title" content="Strata – See where your disk space went. In seconds.">
+<meta property="og:description" content="Free, open-source Windows disk space analyzer. Raw NTFS MFT scans, interactive sunburst, safe delete.">
+<meta property="og:url" content="https://kasempiternal.github.io/strata/">
+<meta property="og:image" content="https://kasempiternal.github.io/strata/media/hero.png">
+<meta property="og:image:width" content="2880">
+<meta property="og:image:height" content="1800">
+<meta property="og:image:alt" content="Strata showing a sunburst chart of a C: drive next to a sorted list of folders">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Strata – See where your disk space went. In seconds.">
+<meta name="twitter:description" content="Free, open-source Windows disk space analyzer. Raw NTFS MFT scans, interactive sunburst, safe delete.">
+<meta name="twitter:image" content="https://kasempiternal.github.io/strata/media/hero.png">
+
+<style>
+:root{
+  --bg:#0b0d12; --bg2:#0e1118; --panel:#12151d; --panel2:#181c26;
+  --border:rgba(255,255,255,.08); --border2:rgba(255,255,255,.14);
+  --text:#e8eaf0; --muted:#a3aabd; --dim:#6f7790;
+  --violet:#8b5cf6; --blue:#3b82f6; --accent:linear-gradient(135deg,#8b5cf6 0%,#3b82f6 100%);
+  --ring:#b4a6ff; --ease:cubic-bezier(.2,.7,.2,1);
+  --font:"Segoe UI Variable Text","Segoe UI Variable","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --display:"Segoe UI Variable Display","Segoe UI Variable","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:76px;background:var(--bg)}
+body{font:16px/1.6 var(--font);color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased;overflow-x:hidden;font-variant-numeric:tabular-nums}
+img{display:block;max-width:100%;height:auto}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--ring);outline-offset:3px;border-radius:8px}
+.skip{position:absolute;left:12px;top:-60px;background:#fff;color:#000;padding:10px 16px;border-radius:8px;z-index:100;text-decoration:none;font-weight:600}
+.skip:focus{top:12px}
+.wrap{width:min(1160px,100% - 40px);margin-inline:auto}
+
+/* backdrop */
+.glow{position:absolute;inset:0 0 auto 0;height:900px;pointer-events:none;overflow:hidden;z-index:-1}
+.glow::before,.glow::after{content:"";position:absolute;border-radius:50%;filter:blur(110px);opacity:.5}
+.glow::before{width:620px;height:620px;left:8%;top:-240px;background:#6d4aff}
+.glow::after{width:560px;height:560px;right:4%;top:-120px;background:#2563eb;opacity:.38}
+
+/* nav */
+header.nav{position:sticky;top:0;z-index:50;background:rgba(11,13,18,.72);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.nav .wrap{display:flex;align-items:center;gap:28px;height:64px}
+.brand{display:flex;align-items:center;gap:10px;font:600 18px var(--display);text-decoration:none;letter-spacing:-.01em}
+.brand img{width:30px;height:30px;border-radius:8px}
+.nav nav{display:flex;gap:24px;margin-left:12px}
+.nav nav a{color:var(--muted);text-decoration:none;font-size:14.5px;transition:color .15s}
+.nav nav a:hover{color:var(--text)}
+.nav .sp{flex:1}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:48px;padding:0 24px;border-radius:12px;font-weight:600;font-size:16px;text-decoration:none;border:1px solid transparent;transition:transform .15s var(--ease),box-shadow .2s,background .2s,border-color .2s;cursor:pointer;white-space:nowrap}
+.btn svg{flex:none}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 8px 30px rgba(99,102,241,.38)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(99,102,241,.55)}
+.btn-ghost{background:rgba(255,255,255,.05);border-color:var(--border2);color:var(--text)}
+.btn-ghost:hover{background:rgba(255,255,255,.1);transform:translateY(-2px)}
+.btn.sm{height:38px;padding:0 16px;font-size:14px;border-radius:10px}
+.btn:active{transform:scale(.98)}
+
+/* hero */
+.hero{position:relative;padding:76px 0 20px;text-align:center}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:6px 14px 6px 10px;border:1px solid var(--border2);border-radius:99px;background:rgba(255,255,255,.04);font-size:13.5px;color:var(--muted);margin-bottom:26px}
+.pill i{width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 0 4px rgba(52,211,153,.18)}
+h1{font:700 clamp(38px,6.4vw,76px)/1.04 var(--display);letter-spacing:-.035em;max-width:15em;margin:0 auto}
+.grad{background:var(--accent);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{font-size:clamp(17px,2vw,20px);color:var(--muted);max-width:640px;margin:22px auto 34px}
+.cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.fine{margin-top:16px;font-size:13.5px;color:var(--dim)}
+.shot{position:relative;margin:64px auto 0;max-width:1080px}
+.shot::before{content:"";position:absolute;inset:6% 4% -4%;background:var(--accent);filter:blur(80px);opacity:.28;z-index:-1;border-radius:40px}
+.frame{border-radius:14px;overflow:hidden;border:1px solid var(--border2);background:var(--bg);box-shadow:0 40px 100px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.03) inset}
+.frame img{width:100%}
+
+/* stats */
+.stats{margin:90px auto 0;display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:18px;overflow:hidden}
+.stat{background:var(--panel);padding:30px 32px}
+.stat b{display:block;font:700 clamp(28px,3.4vw,42px)/1.1 var(--display);letter-spacing:-.025em}
+.stat span{display:block;margin-top:8px;color:var(--muted);font-size:15px}
+.stat small{color:var(--dim)}
+
+/* sections */
+section{padding:110px 0 0}
+.eyebrow{font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#a99bff;margin-bottom:12px}
+h2{font:700 clamp(30px,4vw,46px)/1.12 var(--display);letter-spacing:-.03em;max-width:18em}
+.sub{color:var(--muted);font-size:18px;max-width:640px;margin-top:16px}
+.center{text-align:center}.center h2,.center .sub{margin-inline:auto}
+
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:52px}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.015));border:1px solid var(--border);border-radius:16px;padding:28px;transition:transform .25s var(--ease),border-color .25s,background .25s}
+.card:hover{transform:translateY(-4px);border-color:rgba(139,92,246,.45)}
+.ico{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;background:rgba(139,92,246,.14);color:#b9a8ff;margin-bottom:18px}
+.card h3{font:600 19px/1.3 var(--display);margin-bottom:8px;letter-spacing:-.01em}
+.card p{color:var(--muted);font-size:15.5px}
+
+/* how fast */
+.how{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+.how p{color:var(--muted);font-size:17px;margin-top:16px}
+.how p b{color:var(--text);font-weight:600}
+.cmp{display:grid;gap:16px}
+.lane{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:22px 24px}
+.lane h4{font:600 15px var(--font);display:flex;justify-content:space-between;gap:12px;margin-bottom:14px}
+.lane h4 em{font-style:normal;color:var(--dim);font-weight:500}
+.lane.fast{border-color:rgba(139,92,246,.5);background:linear-gradient(180deg,rgba(139,92,246,.1),rgba(59,130,246,.04))}
+.ticks{display:flex;flex-wrap:wrap;gap:4px}
+.ticks i{width:12px;height:12px;border-radius:3px;background:rgba(255,255,255,.12)}
+.ticks i:nth-child(5n){background:rgba(255,255,255,.2)}
+.stream{height:12px;border-radius:99px;background:var(--accent);box-shadow:0 0 24px rgba(99,102,241,.5);position:relative;overflow:hidden}
+.stream::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);transform:translateX(-100%);animation:sweep 2.2s linear infinite}
+@keyframes sweep{to{transform:translateX(100%)}}
+.lane p{font-size:14.5px;margin-top:14px;color:var(--muted)}
+
+/* showcase */
+.show{display:grid;grid-template-columns:repeat(2,1fr);gap:22px;margin-top:52px}
+.fig{margin:0}
+.fig .frame{transition:transform .3s var(--ease),border-color .3s}
+.fig:hover .frame{transform:translateY(-4px);border-color:rgba(139,92,246,.5)}
+.fig figcaption{margin-top:14px;color:var(--muted);font-size:15px}
+.fig figcaption b{color:var(--text);font-weight:600}
+.demo{margin-top:52px;max-width:1000px;margin-inline:auto}
+
+/* faq */
+.faq{max-width:780px;margin:48px auto 0;display:grid;gap:12px}
+details{background:var(--panel);border:1px solid var(--border);border-radius:14px;transition:border-color .2s}
+details[open]{border-color:rgba(139,92,246,.4)}
+summary{list-style:none;cursor:pointer;padding:20px 24px;font:600 17px var(--display);display:flex;justify-content:space-between;align-items:center;gap:16px;border-radius:14px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"";width:10px;height:10px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg) translateY(-3px);transition:transform .25s var(--ease);flex:none}
+details[open] summary::after{transform:rotate(-135deg) translate(-3px,0)}
+details p{padding:0 24px 22px;color:var(--muted);font-size:16px}
+details a{color:#b9a8ff}
+
+/* final CTA + footer */
+.final{margin-top:110px;text-align:center;padding:64px 28px;border-radius:24px;border:1px solid var(--border2);background:radial-gradient(600px 300px at 50% 0%,rgba(99,102,241,.28),transparent 70%),var(--panel)}
+.final h2{margin-inline:auto}
+.final .cta{margin-top:30px}
+footer{margin-top:90px;border-top:1px solid var(--border);padding:34px 0 46px;color:var(--dim);font-size:14.5px}
+footer .wrap{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+footer a{color:var(--muted);text-decoration:none;margin-left:20px}
+footer a:first-child{margin-left:0}
+footer a:hover{color:var(--text)}
+
+/* reveal */
+.js .rv{opacity:0;transform:translateY(22px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.js .rv.in{opacity:1;transform:none}
+
+@media (max-width:980px){
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .how{grid-template-columns:1fr;gap:36px}
+  .stats{grid-template-columns:1fr}
+  .nav nav{display:none}
+}
+@media (max-width:640px){
+  body{font-size:15.5px}
+  .wrap{width:calc(100% - 32px)}
+  .hero{padding-top:48px}
+  .grid,.show{grid-template-columns:1fr}
+  .cta .btn{width:100%}
+  .btn{padding:0 20px}
+  section{padding-top:80px}
+  .stat{padding:24px}
+  .final{padding:44px 20px;margin-top:80px}
+  .shot{margin-top:44px}
+  .nav .btn.sm{padding:0 12px}
+  .nav .wrap{gap:12px}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .js .rv{opacity:1;transform:none}
+}
+</style>
+<script>document.documentElement.classList.add('js')</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="glow" aria-hidden="true"></div>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Strata home"><img src="logo.png" width="30" height="30" alt="">Strata</a>
+    <nav aria-label="Primary">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#screens">Screenshots</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <span class="sp"></span>
+    <a class="btn btn-ghost sm" href="https://github.com/Kasempiternal/strata">
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      GitHub
+    </a>
+  </div>
+</header>
+
+<main id="main">
+<div id="top"></div>
+<div class="wrap hero">
+  <div class="pill"><i></i> Free &amp; open source · MIT · Windows 10/11</div>
+  <h1>See where your disk space went. <span class="grad">In seconds.</span></h1>
+  <p class="lead">Strata maps an entire drive by reading the NTFS Master File Table directly, then turns it into an interactive sunburst you can explore, clean up and trust.</p>
+  <div class="cta">
+    <a class="btn btn-primary" href="https://github.com/Kasempiternal/strata/releases/latest">
+      <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v8.5M4.5 7.5 8 11l3.5-3.5M2.5 13.5h11"/></svg>
+      Download for Windows
+    </a>
+    <a class="btn btn-ghost" href="https://github.com/Kasempiternal/strata">
+      <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      View on GitHub
+    </a>
+  </div>
+  <p class="fine">Windows 10/11 x64 · ~1.5 MB installer · no telemetry</p>
+
+  <div class="shot rv">
+    <div class="frame"><img src="media/hero.png" width="2880" height="1800" alt="Strata exploring a C: drive: a colourful sunburst chart on the left with a tooltip over the Users folder, and a sorted list of folders with sizes on the right."></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="stats rv" role="list" aria-label="Key facts">
+    <div class="stat" role="listitem"><b class="grad">3 s</b><span>1.8 TB · 3.5 M files scanned, on NVMe with raw NTFS MFT reads</span></div>
+    <div class="stat" role="listitem"><b>~1.5 MB</b><span>installer. No runtime to download, no bloat</span></div>
+    <div class="stat" role="listitem"><b>Free &amp; open</b><span>MIT licensed. Read it, build it, fork it</span></div>
+  </div>
+</div>
+
+<section id="features">
+  <div class="wrap">
+    <div class="eyebrow">Features</div>
+    <h2>Everything you need to find the space hogs. Nothing you don't.</h2>
+    <div class="grid">
+      <article class="card rv"><div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></svg></div><h3>MFT-speed scanning</h3><p>Reads the NTFS Master File Table directly. Millions of files are indexed in a few seconds instead of minutes.</p></article>
+      <article class="card rv"><div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 5a7 7 0 1 1-7 7"/><path d="M12 1.5a10.5 10.5 0 1 1-10.5 10.5"/></svg></div><h3>Interactive sunburst</h3><p>Hover to see sizes, click to drill in, click the centre to go back. Rings are coloured by top-level folder so patterns pop out.</p></article>
+      <article class="card rv"><div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h11M4 18h6"/></svg></div><h3>Largest files &amp; file types</h3><p>Jump straight to the 500 biggest files, or see which extensions eat your drive, with counts and sizes.</p></article>
+      <article class="card rv"><div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V5l-8-3Z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg></div><h3>Safe delete</h3><p>Moves to the Recycle Bin by default. System paths are protected, and every delete asks for confirmation first.</p></article>
+      <article class="card rv"><div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/><path d="M7 7h.01M7 17h.01"/></svg></div><h3>Size on disk vs logical</h3><p>Toggle between allocated clusters and logical size to understand why a folder weighs what it does.</p></article>
+      <article class="card rv"><div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c.8-4 4-6 8-6s7.2 2 8 6"/></svg></div><h3>Works without admin</h3><p>No elevation? Strata falls back to a parallel folder walk. Restart as admin whenever you want the instant scan.</p></article>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap how">
+    <div class="rv">
+      <div class="eyebrow">How it's so fast</div>
+      <h2>One sequential read, not millions of folder opens.</h2>
+      <p>Most disk analyzers open every folder and ask Windows about each file, one directory at a time. That is millions of small system calls.</p>
+      <p>Strata instead reads the <b>Master File Table</b>, the index NTFS already keeps of every file, with <b>parallel 16&nbsp;MiB unbuffered reads</b>. It rebuilds the whole folder tree in memory from that single stream, and your NVMe drive does the rest.</p>
+    </div>
+    <div class="cmp rv" aria-hidden="true">
+      <div class="lane"><h4>Typical folder walk <em>minutes</em></h4><div class="ticks" id="ticks"></div><p>Open folder, list files, repeat. Millions of times.</p></div>
+      <div class="lane fast"><h4>Strata MFT read <em>seconds</em></h4><div class="stream"></div><p>Stream the Master File Table. Done.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="screens">
+  <div class="wrap">
+    <div class="center">
+      <div class="eyebrow">Screenshots</div>
+      <h2>Made to be looked at.</h2>
+      <p class="sub">A dark, fast, Windows 11 style interface. Every view stays smooth, even in folders with 100,000 entries.</p>
+    </div>
+    <div class="demo rv">
+      <div class="frame"><img src="media/demo.gif" width="1200" height="750" loading="lazy" alt="Animated demo: pick a drive, watch it scan, drill into folders by clicking the sunburst, then open the Largest files tab."></div>
+    </div>
+    <div class="show">
+      <figure class="fig rv"><div class="frame"><img src="media/drill.png" width="2880" height="1800" loading="lazy" alt="Drilled into a user folder with the AppData slice highlighted in the sunburst."></div><figcaption><b>Drill down.</b> Click any ring segment to go deeper, with smooth animated transitions.</figcaption></figure>
+      <figure class="fig rv"><div class="frame"><img src="media/largest.png" width="2880" height="1800" loading="lazy" alt="The Largest files tab with two files selected and an action bar offering Move to Recycle Bin or Delete permanently."></div><figcaption><b>Largest files.</b> Select, reveal in Explorer and clean up from one list.</figcaption></figure>
+      <figure class="fig rv"><div class="frame"><img src="media/types.png" width="2880" height="1800" loading="lazy" alt="File types view with horizontal bars per extension, showing file count, size and share."></div><figcaption><b>File types.</b> See which extensions take the most space.</figcaption></figure>
+      <figure class="fig rv"><div class="frame"><img src="media/delete.png" width="2880" height="1800" loading="lazy" alt="A confirmation dialog for moving two files to the Recycle Bin, noting that space is freed only after emptying it."></div><figcaption><b>Always confirmed.</b> You see exactly what goes, and how much, before anything is touched.</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="center"><div class="eyebrow">FAQ</div><h2>Questions, answered.</h2></div>
+    <div class="faq">
+      <details class="rv"><summary>Why does Strata ask for admin?</summary><p>Reading the Master File Table means opening the raw volume, which Windows only allows for administrators. Without admin, Strata still works: it falls back to a parallel folder walk, which is slower but needs no special rights. You can restart as admin from the sidebar at any time.</p></details>
+      <details class="rv"><summary>Is it safe?</summary><p>Strata only reads your disk until you choose to delete something. Deleting always asks for confirmation, defaults to the Recycle Bin, and refuses protected system locations. It never uploads anything and has no telemetry. The code is MIT licensed and public, so you can check.</p></details>
+      <details class="rv"><summary>Windows shows a SmartScreen warning. Why?</summary><p>The installer is not code-signed yet, so SmartScreen flags it as unrecognised. Click <em>More info</em>, then <em>Run anyway</em>. You can also build it yourself from the <a href="https://github.com/Kasempiternal/strata">source</a>.</p></details>
+      <details class="rv"><summary>Which systems are supported?</summary><p>Windows 10 and Windows 11, 64-bit (x64) only. The instant MFT scan works on NTFS volumes; other file systems use the folder walk.</p></details>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="final rv">
+    <h2>Find your biggest space hogs in 3 seconds.</h2>
+    <div class="cta">
+      <a class="btn btn-primary" href="https://github.com/Kasempiternal/strata/releases/latest">
+        <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v8.5M4.5 7.5 8 11l3.5-3.5M2.5 13.5h11"/></svg>
+        Download for Windows
+      </a>
+      <a class="btn btn-ghost" href="https://github.com/Kasempiternal/strata">Star on GitHub</a>
+    </div>
+  </div>
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© Strata contributors · Released under the MIT License</span>
+    <span><a href="https://github.com/Kasempiternal/strata">GitHub</a><a href="https://github.com/Kasempiternal/strata/releases">Releases</a><a href="https://github.com/Kasempiternal/strata/issues">Issues</a></span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var t=document.getElementById('ticks');
+  if(t){var h='';for(var i=0;i<84;i++)h+='<i></i>';t.innerHTML=h}
+  var els=document.querySelectorAll('.rv');
+  if(!('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('in')});return}
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{rootMargin:'0px 0px -8% 0px'});
+  els.forEach(function(e){io.observe(e)});
+})();
+</script>
+</body>
+</html>

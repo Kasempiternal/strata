@@ -1,0 +1,43 @@
+name: Bug report
+description: Something is broken or wrong
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for the report! Please search existing issues first.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Scan mode
+      description: Shown in the toast after a scan, e.g. "(MFT)" or "(walk)"
+      options: [MFT (administrator), Walk (standard), Not sure]
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Strata version
+      placeholder: "1.0.0 (bottom-left of the sidebar)"
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      placeholder: "Windows 11 24H2"
+  - type: input
+    id: drive
+    attributes:
+      label: Drive details
+      placeholder: "NVMe 2 TB, NTFS, ~3 M files"
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots / extra context

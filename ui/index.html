@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Strata</title>
+<link rel="icon" href="logo.png">
+<link rel="stylesheet" href="styles.css">
+<script>if (!window.__TAURI__) document.write('<script src="mock.js"><\/script>');</script>
+</head>
+<body>
+<div id="app">
+  <header id="titlebar" data-tauri-drag-region>
+    <img class="tb-logo" src="logo.png" alt="" draggable="false">
+    <span class="tb-title">Strata</span>
+    <span class="tb-sub" id="tb-sub"></span>
+    <div class="tb-btns">
+      <button class="tb-btn" id="win-min" aria-label="Minimize" tabindex="-1"></button>
+      <button class="tb-btn" id="win-max" aria-label="Maximize" tabindex="-1"></button>
+      <button class="tb-btn tb-close" id="win-close" aria-label="Close" tabindex="-1"></button>
+    </div>
+  </header>
+
+  <div id="body">
+    <aside id="sidebar">
+      <div class="side-title">Drives</div>
+      <div id="drives" class="drives"></div>
+      <button class="btn btn-outline wide" id="btn-scan-folder"></button>
+
+      <div class="side-title">Recycle Bin</div>
+      <div class="card bin-card" id="bin-card"></div>
+
+      <div class="side-spacer"></div>
+      <div class="admin-banner" id="admin-banner" hidden>
+        <div class="ab-text">Standard mode: scans walk folders. Restart as admin for instant MFT scans</div>
+        <button class="btn btn-accent small" id="btn-admin"></button>
+      </div>
+      <div class="side-foot">
+        <span class="badge" id="admin-badge"></span>
+        <span class="ver" id="ver"></span>
+      </div>
+    </aside>
+
+    <main id="main">
+      <section class="view" id="view-home"></section>
+
+      <section class="view" id="view-scan" hidden>
+        <div class="scan-card">
+          <div class="scan-orb"><svg viewBox="0 0 120 120" aria-hidden="true">
+            <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b5cf6"/><stop offset="1" stop-color="#3b82f6"/></linearGradient></defs>
+            <circle class="o1" cx="60" cy="60" r="52"/><circle class="o2" cx="60" cy="60" r="38"/><circle class="o3" cx="60" cy="60" r="24"/>
+          </svg></div>
+          <h2 id="scan-phase">Scanning…</h2>
+          <div class="scan-path" id="scan-path"></div>
+          <div class="progress" id="scan-bar"><i></i></div>
+          <div class="scan-stats">
+            <div><b id="st-files">0</b><span>files found</span></div>
+            <div><b id="st-bytes">0 B</b><span>counted</span></div>
+            <div><b id="st-time">0.0 s</b><span>elapsed</span></div>
+          </div>
+          <button class="btn btn-outline" id="btn-cancel">Cancel</button>
+        </div>
+      </section>
+
+      <section class="view" id="view-explore" hidden>
+        <div class="tabs-row">
+          <div class="tabs" id="tabs" role="tablist">
+            <button role="tab" data-tab="explore" class="tab on">Explore</button>
+            <button role="tab" data-tab="largest" class="tab">Largest files</button>
+            <button role="tab" data-tab="types" class="tab">File types</button>
+            <i class="tab-ink" id="tab-ink"></i>
+          </div>
+          <div class="seg" id="metric-seg" role="group" aria-label="Metric">
+            <button data-metric="alloc" class="on">Size on disk</button>
+            <button data-metric="size">Logical size</button>
+            <i class="seg-thumb"></i>
+          </div>
+        </div>
+
+        <div class="tabpane" id="pane-explore">
+          <div class="toolbar">
+            <button class="icon-btn" id="btn-back" title="Back (Alt+Left)" aria-label="Back"></button>
+            <button class="icon-btn" id="btn-up" title="Up one level (Backspace)" aria-label="Up"></button>
+            <nav class="crumbs" id="crumbs" aria-label="Path"></nav>
+            <button class="icon-btn" id="btn-copy-path" title="Copy path" aria-label="Copy path"></button>
+          </div>
+          <div class="head" id="head"></div>
+          <div class="split">
+            <div class="burst-pane" id="burst-pane">
+              <canvas id="burst" aria-label="Sunburst chart of folder sizes"></canvas>
+              <div class="burst-hint">Click a segment to drill in · click the centre to go up</div>
+            </div>
+            <div class="list-pane" id="list-pane">
+              <div class="lhead" id="lhead"></div>
+              <div class="vscroll" id="list-scroll" tabindex="0" aria-label="Folder contents"><div class="vsizer" id="list-sizer"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tabpane" id="pane-largest" hidden>
+          <div class="scope" id="scope-largest"></div>
+          <div class="table-card">
+            <div class="lhead lg-head"><span></span><span>File</span><span class="r">Size</span><span class="r">Actions</span></div>
+            <div class="vscroll" id="lg-scroll" tabindex="0" aria-label="Largest files"><div class="vsizer" id="lg-sizer"></div></div>
+          </div>
+        </div>
+
+        <div class="tabpane" id="pane-types" hidden>
+          <div class="scope" id="scope-types"></div>
+          <div class="types" id="types"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="selbar" class="selbar" aria-hidden="true">
+    <div class="sb-count"><b id="sb-n">0 items</b><span id="sb-size"></span></div>
+    <button class="btn btn-ghost small" id="sb-clear">Clear</button>
+    <button class="btn btn-outline small" id="sb-recycle"></button>
+    <button class="btn btn-danger small" id="sb-delete"></button>
+  </div>
+
+  <div id="toasts" aria-live="polite"></div>
+  <div id="menu" class="menu" hidden role="menu"></div>
+  <div id="tip" class="tip" hidden></div>
+  <div id="modal-root"></div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
